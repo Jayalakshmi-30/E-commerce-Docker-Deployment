@@ -1,0 +1,50 @@
+version: '3.5'
+services:
+  user-service:
+    image: ${DOCKER_REGISTRY-}user-microservice:v1
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=userservice;Username=postgres;Password=root
+      - JWT__Key=4F79A9D8B8A7AABDECBF4D0EFAFD6D3F2C1A0A9C8987859499BAC7B6F2D9E8F7
+      - JWT__Issuer=Developer
+      - JWT__Audience=E commerce site
+    ports:
+      - "5004:80"
+    depends_on:
+      - postgres
+
+  product-service:
+    image: ${DOCKER_REGISTRY-}product-microservice:v1
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/product-catalog
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_DB=userservice
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  mongodb_data:
+  postgres_data:
